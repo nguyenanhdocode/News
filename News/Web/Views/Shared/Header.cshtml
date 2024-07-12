@@ -1,0 +1,92 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using Core.Entities;
+@using System.Security.Claims
+@using Application.Services;
+
+@inject IUserService userService;
+
+@{
+    var profile = await userService.GetProfile();
+    var param = ViewContext.HttpContext.Request.Query;
+}
+
+<link href="@Url.Content("~/css/header.css")" rel="stylesheet" type="text/css" />
+<header>
+    <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white">
+        <div class="container">
+            <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
+                <img src="~/favicon.ico" />
+                N4News
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                    aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                <form class="d-flex flex-grow-1 px-2">
+                    <input name="kw" class="form-control me-2" type="search" 
+                        placeholder="Nhập nội dung tìm kiếm..."
+                        value=@param["kw"]>
+                    <button class="btn btn-primary" style="width: 120px" type="submit">Tìm kiếm</button>
+                </form>
+                    
+                @if (User.Identity.IsAuthenticated)
+                {
+                    var avatarUrl = profile.AvatarUrl != null ? profile.AvatarUrl : "/images/profile-user.png";
+
+                    <div class="dropdown position-relative">
+                        <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                            <img style="width: 40px; height: 40px;" class="rounded-circle" src=@avatarUrl />
+                        </button>
+                        <ul id="user-menu" class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                            <li><a class="dropdown-item" href="#">@profile.FirstName @profile.LastName</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" asp-area="" asp-action="Logout" asp-controller="User">Đăng xuất</a></li>
+                        </ul>
+                    </div>
+                }
+                else
+                {
+                    <ul class="navbar-nav justify-content-end">
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Users" asp-action="Login">
+                                Đăng nhập
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">
+                                Đăng ký
+                            </a>
+                        </li>
+                    </ul>
+                }
+
+            </div>
+        </div>
+    </nav>
+
+    <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <div class="container">
+            <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link text-dark ps-0" asp-area="" asp-controller="Home" asp-action="Index">
+                            Trang chủ
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">
+                            Thế giới
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">
+                            Thể thao
+                        </a>
+                    </li>
+                </ul>
+
+            </div>
+        </div>
+    </nav>
+</header>

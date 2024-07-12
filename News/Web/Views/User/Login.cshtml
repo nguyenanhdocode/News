@@ -1,0 +1,44 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@using Application.Models.User;
+@model LoginModel;
+
+<div class="row">
+    <div class="col-sm-12 col-md-4">
+        <h3>Bạn chưa có tài khoản?</h3>
+        <p class="mb-1">Đăng ký tài khoản để có thể trải nghiệm tất cả các tính năng của website nhé!</p>
+        <a href="#" class="mt-1">Đăng ký tài khoản</a>
+    </div>
+    <div class="col-sm-12 col-md-8">
+        <h3>Đăng nhập</h3>
+        @if (@ViewData["error"] != null)
+        {
+            <div class="alert alert-danger">
+                @ViewData["error"]
+            </div>
+        }
+        
+        <form method="post">
+            <div class="mb-3">
+                <label for="exampleInputEmail1" class="form-label">Địa chỉ email</label>
+                @Html.TextBoxFor(p => p.Email, htmlAttributes: new Dictionary<string, Object> {
+                {"class", "form-control"}
+                })
+                <small class="text-danger">@Html.ValidationMessageFor(model => model.Email)</small>
+            </div>
+            <div class="mb-3">
+                <label for="exampleInputPassword1" class="form-label">Mật khẩu</label>
+                @Html.PasswordFor(p => p.Password, htmlAttributes: new Dictionary<string, Object> {
+                {"class", "form-control"}
+                })
+                <small class="text-danger">@Html.ValidationMessageFor(model => model.Password)</small>
+            </div>
+            <div class="mb-3 form-check">
+                <input type="checkbox" class="form-check-input" id="exampleCheck1">
+                <label class="form-check-label" for="exampleCheck1">Ghi nhớ đăng nhập</label>
+            </div>
+            <button type="submit" class="btn btn-primary">Đăng nhập</button>
+        </form>
+    </div>
+</div>
