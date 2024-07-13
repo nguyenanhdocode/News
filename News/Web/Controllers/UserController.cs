@@ -38,7 +38,7 @@ namespace Web.Controllers
             , [FromServices] IValidator<LoginModel> validator)
         {
             bool useReCaptcha = false;
-            
+
             int accessFailedCount = await _userService.GetAccessFailedCount(model.Email ?? "");
             if (accessFailedCount >= 3)
             {
@@ -46,23 +46,18 @@ namespace Web.Controllers
                 ViewData["UseReCaptcha"] = useReCaptcha;
             }
 
-            if (useReCaptcha)
+            string reCaptcha = Request.Form["g-Recaptcha-Response"];
+            if (useReCaptcha && !_reCaptchaService.Validate(reCaptcha))
             {
-                string reCaptcha = Request.Form["g-Recaptcha-Response"];
-                if (!_reCaptchaService.Validate(reCaptcha))
-                {
-                    ViewData["ReCaptchaError"] = "Vui lòng xác nhận rằng bạn không phải là người máy";
-                    return View();
-                }
+                ViewData["ReCaptchaError"] = "Vui lòng xác nhận rằng bạn không phải là người máy";
+                return View();
             }
-            else
+
+            var val = validator.Validate(model);
+            if (!val.IsValid)
             {
-                var val = validator.Validate(model);
-                if (!val.IsValid)
-                {
-                    val.AddToModelState(ModelState);
-                    return View();
-                }
+                val.AddToModelState(ModelState);
+                return View();
             }
 
             try
@@ -76,28 +71,6 @@ namespace Web.Controllers
             {
                 ViewData["error"] = "Thông tin đăng nhập không chính xác!";
             }
-
-            //string reCaptcha = Request.Form["g-Recaptcha-Response"];
-            //if (useReCaptcha && !_reCaptchaService.Validate(reCaptcha))
-            //{
-            //    ViewData["ReCaptchaError"] = "Vui lòng xác nhận rằng bạn không phải là người máy";
-            //    return View();
-            //}
-
-            //if (!ModelState.IsValid)
-            //    return View();
-
-            //try
-            //{
-            //    var principal = await _userService.Login(model);
-            //    await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme
-            //        , principal);
-            //    return Redirect("/");
-            //}
-            //catch (UnauthorizeException)
-            //{
-            //    ViewData["error"] = "Thông tin đăng nhập không chính xác!";
-            //}
 
             return View();
         }
@@ -126,7 +99,7 @@ namespace Web.Controllers
             string reCaptcha = Request.Form["g-Recaptcha-Response"];
             if (!_reCaptchaService.Validate(reCaptcha))
             {
-                
+
                 ViewData["ReCaptchaError"] = "Vui lòng xác nhận rằng bạn không phải là người máy";
                 return View();
             }
@@ -175,6 +148,70 @@ namespace Web.Controllers
             }
 
             return View();
+        }
+
+        [HttpGet]
+        [Route("Register")]
+        public IActionResult Register()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [Route("Register")]
+        public async Task<IActionResult> Register(
+            [CustomizeValidator(Skip = true)]RegisterModel model
+            , [FromServices] IValidator<RegisterModel> validator)
+        {
+            string reCaptcha = Request.Form["g-Recaptcha-Response"];
+            if (!_reCaptchaService.Validate(reCaptcha))
+            {
+
+                ViewData["ReCaptchaError"] = "Vui lòng xác nhận rằng bạn không phải là người máy";
+                return View();
+            }
+
+            var val = validator.Validate(model);
+            if (!val.IsValid)
+            {
+                val.AddToModelState(ModelState);
+                return View();
+            }
+
+            try
+            {
+                await _userService.Register(model);
+                model = new RegisterModel();
+                string message = "Đăng ký thành công! Vui lòng kiểm tra hộp thư và xác nhận tài khoản.";
+                ViewData["Alert"] = new Alert(AlertTypes.Success, message);
+            }
+            catch (UnprocessableEntityException)
+            {
+                string message = "Xảy ra lỗi trong quá trình tạo tài khoản.";
+                ViewData["Alert"] = new Alert(AlertTypes.Danger, message);
+            }
+
+            return View();
+        }
+
+        [HttpGet]
+        [Route("ConfirmEmail")]
+        public async Task<IActionResult> ConfirmEmail([FromQuery] string token
+            , [FromQuery] string userId)
+        {
+            try
+            {
+                await _userService.ConfirmEmail(new ConfirmEmailModel
+                {
+                    Token = token,
+                    UserId = userId
+                });
+                return RedirectToAction("Login", "Users");
+            }
+            catch (UnprocessableEntityException)
+            {
+                throw;
+            }
         }
     }
 }

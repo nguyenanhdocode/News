@@ -13,7 +13,7 @@ namespace Application.MappingProfiles
     {
         public UserProfile()
         {
-            //CreateMap<CreateUserModel, AppUser>();
+            CreateMap<RegisterModel, AppUser>();
 
             CreateMap<AppUser, OwnProfileResponseModel>()
                 .ForMember(p => p.AvatarUrl, m => m.MapFrom(u => (u.Avatar != null) ? u.Avatar.Path : null));

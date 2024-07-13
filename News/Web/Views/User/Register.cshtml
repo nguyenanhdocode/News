@@ -1,0 +1,80 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@using Application.Common;
+@using Microsoft.Extensions.Options;
+@using Application.Models.Common;
+
+@inject IOptions<ReCaptchaConfiguration> reCaptchaConfig;
+@model Application.Models.User.RegisterModel
+
+
+@{
+    var alert = ViewData["Alert"] as Alert;
+}
+
+<form method="post">
+    <h3>Đăng ký tài khoản</h3>
+
+    @if (alert != null)
+    {
+        string className = string.Format("alert alert-{0}", alert.Type);
+        <div class="@className">
+            @alert.Message
+        </div>
+    }
+
+    <div class="mb-3">
+        <label for="exampleInputEmail1" class="form-label">Địa chỉ email</label>
+        @Html.TextBoxFor(p => p.Email, htmlAttributes: new Dictionary<string, object> {
+            {"class", "form-control"},
+            {"type", "email"}
+        })
+        <small class="text-danger">@Html.ValidationMessageFor(model => model.Email)</small>
+    </div>
+    <div class="row">
+        <div class="col-sm-12 col-md-6">
+            <div class="mb-3">
+                <label for="firstName" class="form-label">Tên</label>
+                @Html.TextBoxFor(p => p.FirstName, htmlAttributes: new Dictionary<string, object> {
+                    {"class", "form-control"}
+                })
+                <small class="text-danger">@Html.ValidationMessageFor(model => model.FirstName)</small>
+            </div>
+        </div>
+        <div class="col-sm-12 col-md-6">
+            <div class="mb-3">
+                <label for="lastName" class="form-label">Họ</label>
+                @Html.TextBoxFor(p => p.LastName, htmlAttributes: new Dictionary<string, object> {
+                    {"class", "form-control"}
+                })
+                <small class="text-danger">@Html.ValidationMessageFor(model => model.LastName)</small>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12 col-md-6">
+            <div class="mb-3">
+                <label for="password" class="form-label">Mật khẩu</label>
+                @Html.PasswordFor(p => p.Password, htmlAttributes: new Dictionary<string, object> {
+                {"class", "form-control"}
+                })
+                <small class="text-danger d-block">@Html.ValidationMessageFor(model => model.Password)</small>
+                <small>Mật khẩu tối thiểu 10 ký tự, bao gồm số và ký tự đặc biệt.</small>
+            </div>
+        </div>
+        <div class="col-sm-12 col-md-6">
+            <div class="mb-3">
+                <label for="confirmPassword" class="form-label">Nhập lại mật khẩu</label>
+                @Html.PasswordFor(p => p.ConfirmPassword, htmlAttributes: new Dictionary<string, object> {
+                {"class", "form-control"}
+                })
+                <small class="text-danger">@Html.ValidationMessageFor(model => model.ConfirmPassword)</small>
+            </div>
+        </div>
+    </div>
+    <div class="g-recaptcha" data-sitekey=@reCaptchaConfig.Value.Key></div>
+    <p><small class="text-danger">@ViewData["ReCaptchaError"]</small></p>
+    <button type="submit" class="btn btn-primary mt-2">Đăng ký</button>
+</form>

@@ -17,6 +17,7 @@ using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using System.Transactions;
 
 namespace Application.Services.Impl
 {
@@ -47,13 +48,29 @@ namespace Application.Services.Impl
             _emailService = emailService;
         }
 
+        public async Task ConfirmEmail(ConfirmEmailModel model)
+        {
+            var user = await _userManager.FindByIdAsync(model.UserId);
+            if (user == null || user.EmailConfirmed)
+                throw new UnprocessableEntityException("Your verification link is incorrect");
+
+            var result = await _userManager.ConfirmEmailAsync(user, model.Token.Replace(" ", "+"));
+            if (!result.Succeeded)
+                throw new UnprocessableEntityException("Your verification link is incorrect");
+        }
+
         public async Task CreateForgotPasswordRequest(ForgotPasswordModel model)
         {
             AppUser user = await _userManager.FindByEmailAsync(model.Email);
             string token = await _userManager.GeneratePasswordResetTokenAsync(user);
             string template = await _templateService.GetTemplateAsync("reset_password.html");
-            string domainName = _contextAccessor.HttpContext.Request.GetDisplayUrl();
-            string link = string.Format("{0}/{1}", domainName, token);
+            string url = string.Format("{0}://{1}{2}"
+                , _contextAccessor.HttpContext.Request.Scheme
+                , _contextAccessor.HttpContext.Request.Host
+                , _contextAccessor.HttpContext.Request.PathBase);
+            string link = string.Format("{0}/Users/ResetPassword?Token={1}&UserId={2}"
+                , url, token, user.Id);
+
             string body = _templateService.ReplaceInTemplate(template
                 , new Dictionary<string, string>
             {
@@ -106,6 +123,34 @@ namespace Application.Services.Impl
             var principal = new ClaimsPrincipal(identity);
 
             return principal;
+        }
+
+        public async Task Register(RegisterModel model)
+        {
+
+            var user = _mapper.Map<AppUser>(model);
+            user.UserName = model.Email;
+            var result = await _userManager.CreateAsync(user, model.Password);
+
+            if (!result.Succeeded)
+                throw new UnprocessableEntityException(result.Errors.FirstOrDefault()?.Description);
+
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            string content = await _templateService.GetTemplateAsync("confirm_email.html");
+            string url = string.Format("{0}://{1}{2}"
+                , _contextAccessor.HttpContext.Request.Scheme
+                , _contextAccessor.HttpContext.Request.Host
+                , _contextAccessor.HttpContext.Request.PathBase);
+            string link = string.Format("{0}/Users/ConfirmEmail?Token={1}&UserId={2}"
+                , url, token, user.Id);
+            string body = _templateService.ReplaceInTemplate(content, new Dictionary<string, string>()
+                        {
+                            { "{firstName}", model.FirstName },
+                            { "{lastName}", model.LastName},
+                            { "{activateLink}", link }
+                        });
+
+            await _emailService.SendEmailAsync(new EmailMessage(model.Email, body, "Activate account"));
         }
 
         public async Task ResetPassword(ResetPasswordModel model)

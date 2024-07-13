@@ -15,8 +15,6 @@ namespace Web.Controllers
 
         public IActionResult Index()
         {
-            string message = "Hello guy";
-            ViewData["Message"] = message;
             return View();
         }
 

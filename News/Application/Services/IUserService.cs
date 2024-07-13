@@ -44,5 +44,19 @@ namespace Application.Services
         /// <param name="userId"></param>
         /// <returns></returns>
         Task<int> GetAccessFailedCount(string email);
+
+        /// <summary>
+        /// Register user
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        Task Register(RegisterModel model);
+
+        /// <summary>
+        /// Confirm email
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        Task ConfirmEmail(ConfirmEmailModel model);
     }
 }
