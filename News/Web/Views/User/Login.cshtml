@@ -2,7 +2,16 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 @using Application.Models.User;
+@using Application.Common
+@using Microsoft.Extensions.Options;
+@using Application.Models.Common;
 @model LoginModel;
+
+@inject IOptions<ReCaptchaConfiguration> reCaptchaConfig;
+
+@{
+    bool useReCaptcha = Convert.ToBoolean(@ViewData["UseReCaptcha"]);
+}
 
 <div class="row">
     <div class="col-sm-12 col-md-4">
@@ -34,10 +43,16 @@
                 })
                 <small class="text-danger">@Html.ValidationMessageFor(model => model.Password)</small>
             </div>
-            <div class="mb-3 form-check">
-                <input type="checkbox" class="form-check-input" id="exampleCheck1">
-                <label class="form-check-label" for="exampleCheck1">Ghi nhớ đăng nhập</label>
+            <div class="mb-3">
+               <a class="text-decoration-none text-muted" asp-area="" asp-controller="User" asp-action="ForgotPassword">
+                   Bạn quên mật khẩu?
+               </a>
             </div>
+            @if (useReCaptcha)
+            {
+                <div class="g-recaptcha" data-sitekey=@reCaptchaConfig.Value.Key></div>
+            }
+            <p><small class="text-danger">@ViewData["ReCaptchaError"]</small></p>
             <button type="submit" class="btn btn-primary">Đăng nhập</button>
         </form>
     </div>
