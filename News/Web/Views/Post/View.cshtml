@@ -1,0 +1,40 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@using Application.Models.Post;
+@using Application.Services;
+
+@model Application.Models.Post.ViewPostModel;
+
+@inject IPostService postService;
+
+@{
+    var relatedPosts = await postService.GetRelatedPosts(new List<Guid>
+    {
+        Model.Id
+    }, Model.Category.Slug);
+    ViewData["DisplayColumn"] = false;
+}
+
+<div class="row">
+    <div class="col-sm-12 col-md-8">
+        <div>
+            <h2>@Model.Title</h2>
+            <div class="d-flex justify-content-between">
+                <p>Ngày đăng: @Model.CreatedOn</p>
+                <p>Loại tin: @Model.Category.Name</p>
+            </div>
+            <div id="content">
+                @Html.Raw(Model.Content)
+            </div>
+            @Html.HiddenFor(p => p.Content, htmlAttributes: new Dictionary<string, object> {
+            {"id", "ContentHidden"}
+            })
+        </div>
+    </div>
+
+    <div class="col-sm-12 col-md-4">
+        @await Html.PartialAsync("~/Views/Post/RelatedPosts.cshtml", relatedPosts)
+    </div>
+</div>

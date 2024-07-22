@@ -16,5 +16,6 @@ namespace Core.Entities
         public string? CreatedUserId { get; set; }
         public AppUser CreatedUser { get; set; }
         public AppUser Avatar { get; set; }
+        public List<Post> CoverPhotos { get; set; }
     }
 }

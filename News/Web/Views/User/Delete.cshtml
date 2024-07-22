@@ -1,0 +1,97 @@
+﻿@model Application.Models.User.DeleteUserModel;
+
+@using Application.Services;
+@using Application.Models.User;
+@using Application.Models.Post;
+@using Application.Models.PostCategory;
+
+@{
+    var profile = ViewData["Profile"] as ProfileModel;
+    var posts = ViewData["Posts"] as List<ViewPostModel> ?? new List<ViewPostModel>();
+    var cates = ViewData["Cates"] as List<CategoryModel> ?? new List<CategoryModel>();
+}
+
+<div class="alert alert-warning">
+    <form method="post">
+        <h3>Xoá người dùng</h3>
+
+        @if (posts.Count == 0)
+        {
+            <p class="mb-0">Bạn có muốn xoá danh mục <b>@profile.Email</b> không?</p>
+            <p>
+                Dữ liệu không thể khôi phục sau khi thực hiện thao tác này!
+            </p>
+            <hr />
+        }
+        else
+        {
+            <p>
+                Bạn không thể xoá người dùng này do đã có các dữ liệu liên quan.
+            </p>
+        }
+
+        <div class="text-end">
+            <a class="btn btn-light" href="/Users">Quay lại</a>
+            @if (posts.Count == 0)
+            {
+                <button type="submit" class="btn btn-danger">Xác nhận xoá</button>
+            }
+        </div>
+
+        @Html.HiddenFor(p => p.Id)
+    </form>
+</div>
+
+@if (posts.Count > 0)
+{
+    <h4>Danh sách bài đăng (@posts.Count)</h4>
+    @foreach (var post in posts)
+    {
+        <a class="d-flex mb-2 text-decoration-none text-black border-bottom pb-2"
+           href="/Posts/@post.Slug">
+            <div style="min-width: 180px; height: 110px">
+                <img src="/@post.CoverPhoto.Path" style="width: 100%; height: 100%" />
+            </div>
+            <div class="ps-2">
+                <h3 class="pe-1 fs-5">
+                    @post.Title
+                </h3>
+                <div class="d-flex">
+                    <span class="text-muted">Ngày đăng: @post.CreatedOn</span>
+                    <span class="text-muted ms-4">@post.ViewCount lượt xem</span>
+                </div>
+                <small class="d-block">@post.Description</small>
+            </div>
+        </a>
+    }
+}
+
+@if (cates.Count > 0)
+{
+    <h4 class="mt-3">Danh sách danh mục (@cates.Count)</h4>
+    <table class="table">
+        <thead>
+            <tr>
+                <td class="fw-bold">STT</td>
+                <td class="fw-bold">Tên</td>
+                <td class="fw-bold">Slug</td>
+                <td class="fw-bold">Ngày tạo</td>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                int index = 1;
+                foreach (var cate in cates)
+                {
+                    <tr>
+                        <td class="align-middle">@(index++)</td>
+                        <td class="align-middle">@cate.Name</td>
+                        <td class="align-middle">@cate.Slug</td>
+                        <td class="align-middle">@cate.CreatedOn</td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+
+}

@@ -1,0 +1,22 @@
+﻿@model Application.Models.User.LockUserModel;
+
+<div class="alert alert-warning">
+    <form method="post">
+        <h3>@(Model.IsDisabled ? "Mở khoá tài khoản" : "Khoá tài khoản")</h3>
+
+        <p class="mb-0">
+            Bạn có muốn @(Model.IsDisabled ? "mở khoá" : "khoá")
+            <b>@Model.Email</b> không?
+        </p>
+        <hr />
+
+        <div class="text-end">
+            <a class="btn btn-light" href="/Users">Quay lại</a>
+            <button type="submit" class="btn btn-danger">
+                @(Model.IsDisabled ? "Mở khoá" : "Xác nhận khoá")
+            </button>
+        </div>
+
+        @Html.HiddenFor(p => p.Id)
+    </form>
+</div>

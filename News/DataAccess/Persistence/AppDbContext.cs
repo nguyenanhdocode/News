@@ -18,6 +18,9 @@ namespace DataAccess.Persistence
         { }
 
         public DbSet<Asset> Assets { get; set; }
+        public DbSet<Category> Categories { get; set; }
+        public DbSet<Post> Posts { get; set; }
+        public DbSet<TwoFactorAuth> TwoFactorAuths { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

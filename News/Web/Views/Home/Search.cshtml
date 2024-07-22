@@ -1,0 +1,31 @@
+﻿@model List<Application.Models.Post.ViewPostModel>;
+
+<h3>Tìm kiếm</h3>
+@if (Model.Count == 0)
+{
+    <p>Không tìm thấy kết quả nào.</p>
+}
+else
+{
+    <p>Tìm thấy @Model.Count kết quả</p>
+    @foreach (var post in Model)
+    {
+        <a class="d-flex mb-2 text-decoration-none text-black border-bottom pb-2"
+           href="/Posts/@post.Slug">
+            <div style="min-width: 180px; height: 110px">
+                <img src="/@post.CoverPhoto.Path" style="width: 100%; height: 100%" />
+            </div>
+            <div class="ps-2">
+                <h3 class="pe-1 fs-5">
+                    @post.Title
+                </h3>
+                <div class="d-flex">
+                    <span class="text-muted">Ngày đăng: @post.CreatedOn</span>
+                    <span class="text-muted ms-4">@post.ViewCount lượt xem</span>
+                </div>
+                <small class="d-block">@post.Description</small>
+            </div>
+        </a>
+    }
+}
+

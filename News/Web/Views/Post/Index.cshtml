@@ -1,0 +1,153 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@using Application.Models.Common
+@using Application.Services;
+@using System.Security.Claims
+
+@inject ICategoryService categoryService;
+
+@model List<Application.Models.Post.PostModel>;
+
+@{
+    var alert = ViewData["Alert"] as Alert;
+    string kw = ViewContext.HttpContext.Request.Query["Kw"];
+    string category = ViewContext.HttpContext.Request.Query["Category"];
+    string status = ViewContext.HttpContext.Request.Query["Status"];
+    var categoryItems = new List<SelectListItem>
+    {
+        new SelectListItem
+        {
+                Value = "all",
+                Text = "Tất cả thể loại",
+                Selected = true
+        }
+
+    };
+
+    categoryItems.AddRange((await categoryService.GetAll()).Select(p => new SelectListItem
+            {
+                Value = p.Slug,
+                Text = p.Name
+            }).ToList());
+
+    var listStatus = new List<SelectListItem>
+    {
+        new SelectListItem
+        {
+            Value = "all",
+            Text = "Tất cả trạng thái",
+            Selected = true
+        },
+        new SelectListItem
+        {
+            Value = "draft",
+            Text = "Chưa đăng"
+        },
+        new SelectListItem
+        {
+            Value = "posted",
+            Text = "Đã đăng"
+        }
+    };
+}
+
+<div class="mt-2">
+    @if (alert != null)
+    {
+        string className = string.Format("alert alert-{0}", alert.Type);
+        <div class="@className">
+            @alert.Message
+        </div>
+    }
+    <div class="d-flex justify-content-between">
+        <h4>Quản lý bài đăng</h4>
+        <div>
+            <a class="btn btn-light btn-sm border" asp-area="" asp-action="Create"
+               asp-controller="Post">
+                + Tạo mới
+            </a>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12 col-md-12 col-lg-12">
+            <form>
+                <div class="row">
+                    <div class="col-sm-12 col-md-12 col-lg-6">
+                        @Html.TextBox("Kw", value: "", htmlAttributes: new
+                            {
+                                @class = "form-control"
+                            })
+
+                    </div>
+                    <div class="col-sm-12 col-md-12 col-lg-3">
+                        @Html.DropDownList("Category", categoryItems, htmlAttributes: new
+                            {
+                                @class = "form-select"
+                            })
+                    </div>
+                    <div class="col-sm-12 col-md-12 col-lg-3">
+                        @Html.DropDownList("Status", listStatus, htmlAttributes: new
+                            {
+                                @class = "form-select"
+                            })
+                    </div>
+                </div>
+
+                <div class="mt-2 text-end">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        Tìm kiếm
+                    </button>
+                </div>
+            </form>
+        </div>
+        <div class="col-sm-12 col-md-12 col-lg-12">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <td class="fw-bold">STT</td>
+                        <td class="fw-bold">Tiêu đề</td>
+                        <td class="fw-bold">Slug</td>
+                        <td class="fw-bold">Mô tả</td>
+                        <td class="fw-bold">Ngày tạo</td>
+                        <td></td>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        int index = 1;
+
+                        foreach (var post in Model)
+                        {
+                            <tr>
+                                <td class="align-middle">@(index++)</td>
+                                <td class="align-middle">@post.Title</td>
+                                <td class="align-middle">
+                                    <a class="text-black" href="/Posts/@post.Slug">@post.Slug</a>
+                                </td>
+                                <td class="align-middle">@post.Description</td>
+                                <td class="align-middle">@post.CreatedOn</td>
+                                <td class="align-middle">
+                                    <div class="btn-group" role="group" aria-label="Basic example">
+
+                                        <a href="/Posts/@post.Id.ToString()/Delete" class="btn btn-light border btn-sm">
+                                            Xoá
+                                        </a>
+                                        @if (post.CreatedUser.Id.Equals(User.FindFirst(ClaimTypes.NameIdentifier).Value))
+                                        {
+                                            <a href="/Posts/@post.Id.ToString()/Update" class="btn btn-light border btn-sm" style="width: 100px">
+                                                Chỉnh sửa
+                                            </a>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

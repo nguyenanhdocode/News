@@ -1,0 +1,23 @@
+﻿@using Application.Services;
+@using Application.Models.Post;
+
+@model List<ViewPostModel>;
+
+<h4>Tin mới nhất</h4>
+<div>
+    @foreach (var post in Model)
+    {
+        <a class="d-flex mb-2 text-decoration-none text-black border-bottom pb-2" 
+            href="/Posts/@post.Slug">
+            <div>
+                <h3 class="pe-1 fs-5">
+                    @post.Title
+                </h3>
+                <span class="text-muted">@post.ViewCount lượt xem</span>
+            </div>
+            <div style="min-width: 180px; height: 110px">
+                <img src="/@post.CoverPhoto.Path" style="width: 100%; height: 100%"  />
+            </div>
+        </a>
+    }
+</div>

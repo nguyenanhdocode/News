@@ -17,9 +17,10 @@ namespace Application.MappingProfiles
 
             CreateMap<AppUser, OwnProfileResponseModel>()
                 .ForMember(p => p.AvatarUrl, m => m.MapFrom(u => (u.Avatar != null) ? u.Avatar.Path : null));
-            
-            CreateMap<AppUser, ProfileResponseModel>()
-                .ForMember(p => p.AvatarUrl, m => m.MapFrom(u => (u.Avatar != null) ? u.Avatar.Path : null));
+
+            CreateMap<AppUser, ProfileModel>()
+                .ForMember(p => p.AvatarUrl, m => m.MapFrom(u => (u.Avatar != null) ? u.Avatar.Path : null))
+                .ForMember(p => p.CreatedOn, m => m.MapFrom(u => (u.CreatedDate)));
         }
     }
 }

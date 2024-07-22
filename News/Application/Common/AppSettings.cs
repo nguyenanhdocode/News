@@ -32,4 +32,9 @@ namespace Application.Common
         public string Key { get; set; }
         public string Secret { get; set; }
     }
+
+    public class CryptographyConfiguration
+    {
+        public string Key { get; set; }
+    }
 }

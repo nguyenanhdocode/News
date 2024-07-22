@@ -1,0 +1,64 @@
+﻿@model Application.Models.PostCategory.DeleteCategoryModel;
+
+@using Application.Services;
+@inject IPostService postService;
+
+@{
+    var posts = await postService.GetPostsOfCate(Model.Id);
+}
+
+<div class="alert alert-warning">
+    <form method="post">
+        <h3>Xoá danh mục</h3>
+
+        @if (posts.Count == 0)
+        {
+            <p class="mb-0">Bạn có muốn xoá danh mục <b>@Model.Name</b> không?</p>
+            <p>
+                Dữ liệu không thể khôi phục sau khi thực hiện thao tác này!
+            </p>
+            <hr />
+        }
+        else
+        {
+            <p>
+                Bạn không thể xoá danh mục do đã có các bài đăng thuộc danh mục này.
+                Bạn có thể ẩn danh mục, các bài viết liên quan cũng sẽ ẩn theo.
+            </p>
+        }
+
+        <div class="text-end">
+            <a class="btn btn-light" href="/Posts">Quay lại</a>
+            @if (posts.Count == 0)
+            {
+                <button type="submit" class="btn btn-danger">Xác nhận xoá</button>
+            }
+        </div>
+
+        @Html.HiddenFor(p => p.Id)
+    </form>
+</div>
+
+@if (posts.Count > 0)
+{
+    <h4>Các bài đăng thuộc danh mục (@posts.Count)</h4>
+    @foreach (var post in posts)
+    {
+        <a class="d-flex mb-2 text-decoration-none text-black border-bottom pb-2"
+           href="/Posts/@post.Slug">
+            <div style="min-width: 180px; height: 110px">
+                <img src="/@post.CoverPhoto.Path" style="width: 100%; height: 100%" />
+            </div>
+            <div class="ps-2">
+                <h3 class="pe-1 fs-5">
+                    @post.Title
+                </h3>
+                <div class="d-flex">
+                    <span class="text-muted">Ngày đăng: @post.CreatedOn</span>
+                    <span class="text-muted ms-4">@post.ViewCount lượt xem</span>
+                </div>
+                <small class="d-block">@post.Description</small>
+            </div>
+        </a>
+    }
+}

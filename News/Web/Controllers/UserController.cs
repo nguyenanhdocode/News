@@ -1,14 +1,21 @@
 ﻿using Application.Common;
 using Application.Exceptions;
+using Application.Helper;
 using Application.Models.Common;
+using Application.Models.TwoFactorAuth;
 using Application.Models.User;
 using Application.Services;
+using Core.Common;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Runtime.InteropServices;
+using System.Security.Claims;
 
 namespace Web.Controllers
 {
@@ -17,12 +24,24 @@ namespace Web.Controllers
     {
         private IUserService _userService;
         private IReCaptchaService _reCaptchaService;
+        private IPostService _postService;
+        private ICategoryService _categoryService;
+        private IRoleService _roleService;
+        private ITwoFactorAuthService _twoFactorAuthService;
 
         public UserController(IUserService userService
-            , IReCaptchaService reCaptchaService)
+            , IReCaptchaService reCaptchaService
+            , IPostService postService
+            , ICategoryService categoryService
+            , IRoleService roleService
+            , ITwoFactorAuthService twoFactorAuthService)
         {
             _userService = userService;
             _reCaptchaService = reCaptchaService;
+            _postService = postService;
+            _categoryService = categoryService;
+            _roleService = roleService;
+            _twoFactorAuthService = twoFactorAuthService;
         }
 
         [HttpGet]
@@ -63,6 +82,38 @@ namespace Web.Controllers
             try
             {
                 var principal = await _userService.Login(model);
+
+                var userId = principal.Claims
+                    .SingleOrDefault(p => p.Type.Equals(ClaimTypes.NameIdentifier))?
+                    .Value ?? string.Empty;
+
+                if (await _userService.IsInRole(userId, Roles.Administrator) 
+                    || await _userService.IsInRole(userId, Roles.Moderator))
+                {
+                    var tfa = new CreateTwoFactorAuthModel
+                    {
+                        UserId = userId,
+                        Token = Guid.NewGuid().ToString(),
+                        Code = OTPHelper.GenerateOTP(),
+                        Expires = DateTime.UtcNow.AddHours(24),
+                    };
+
+                    await _twoFactorAuthService.Create(tfa);
+
+                    var user = await _userService.GetProfile(userId);
+
+                    await _twoFactorAuthService.SendCode(new SendCodeModel
+                    {
+                        FirstName = user.FirstName,
+                        LastName = user.LastName,
+                        Email = user.Email,
+                        Code = tfa.Code
+                    });
+
+                    string url = string.Format("/Users/TwoFactorAuth/{0}/{1}", tfa.Token, tfa.UserId);
+                    return Redirect(url);
+                }
+
                 await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme
                     , principal);
                 return Redirect("/");
@@ -70,6 +121,10 @@ namespace Web.Controllers
             catch (UnauthorizeException)
             {
                 ViewData["error"] = "Thông tin đăng nhập không chính xác!";
+            }
+            catch (ForbiddenException)
+            {
+                ViewData["error"] = "Tài khoản của bạn đã bị khoá!";
             }
 
             return View();
@@ -160,7 +215,7 @@ namespace Web.Controllers
         [HttpPost]
         [Route("Register")]
         public async Task<IActionResult> Register(
-            [CustomizeValidator(Skip = true)]RegisterModel model
+            [CustomizeValidator(Skip = true)] RegisterModel model
             , [FromServices] IValidator<RegisterModel> validator)
         {
             string reCaptcha = Request.Form["g-Recaptcha-Response"];
@@ -212,6 +267,164 @@ namespace Web.Controllers
             {
                 throw;
             }
+        }
+
+        [HttpGet]
+        [Route("Profile")]
+        [Authorize]
+        public async Task<IActionResult> Profile()
+        {
+            var profile = await _userService.GetProfile();
+
+            return View(profile);
+        }
+
+        [HttpGet]
+        [Route("{id}")]
+        [Authorize]
+        public async Task<IActionResult> Profile(string id)
+        {
+            var profile = await _userService.GetProfile(id);
+            var roles = await _roleService.GetRolesOfUser(id);
+
+            ViewData["Roles"] = roles;
+
+            return View(profile);
+        }
+
+        [HttpGet]
+        [Authorize(Roles = Roles.Administrator + "," + Roles.Moderator)]
+        public async Task<IActionResult> Index([FromQuery] Dictionary<string, string> param)
+        {
+            var users = await _userService.GetAll(param);
+
+            return View(users);
+        }
+
+        [HttpGet]
+        [Authorize(Roles = Roles.Administrator + "," + Roles.Moderator)]
+        [Route("{userId}/Lock")]
+        public async Task<IActionResult> Lock(string userId)
+        {
+            if (await _userService.IsInRole(userId, Roles.Administrator))
+                throw new ForbiddenException();
+            var profile = await _userService.GetProfile(userId);
+
+            return View(new LockUserModel
+            {
+                Id = profile.Id,
+                Email = profile.Email,
+                IsDisabled = profile.IsDisabled
+            });
+        }
+
+        [HttpGet]
+        [Authorize(Roles = Roles.Administrator)]
+        [Route("{userId}/Delete")]
+        public async Task<IActionResult> Delete(string userId)
+        {
+            var profile = await _userService.GetProfile(userId);
+            var posts = await _postService.GetPostsOfUser(userId);
+            var cates = await _categoryService.GetCatesOfUser(userId);
+
+            ViewData["Profile"] = profile;
+            ViewData["Posts"] = posts;
+            ViewData["Cates"] = cates;
+
+            return View(new DeleteUserModel { Id = profile.Id });
+        }
+
+        [HttpPost]
+        [Authorize(Roles = Roles.Administrator)]
+        [Route("{userId}/Delete")]
+        public async Task<IActionResult> Delete(DeleteUserModel model)
+        {
+            await _userService.Delete(model.Id);
+
+            return RedirectToAction("Index", "User");
+        }
+
+        [HttpPost]
+        [Authorize(Roles = Roles.Administrator + "," + Roles.Moderator)]
+        [Route("{userId}/Lock")]
+        public async Task<IActionResult> Lock(LockUserModel model)
+        {
+            await _userService.LockUser(model.Id);
+
+            return RedirectToAction("Index", "User");
+        }
+
+        [HttpGet]
+        [Authorize(Roles = Roles.Administrator)]
+        [Route("{userId}/Roles/Update")]
+        public async Task<IActionResult> UpdateRoles(string userId)
+        {
+            var userRoles = await _roleService.GetRolesOfUser(userId);
+            var excludedRoles = new List<string>()
+            {
+                Roles.Administrator
+            };
+            excludedRoles.AddRange(userRoles);
+
+            var roles = await _roleService.GetAll(excludedRoles);
+
+            ViewData["Roles"] = roles;
+            ViewData["UserRoles"] = userRoles;
+
+            return View();
+        }
+
+        [HttpPost]
+        [Authorize(Roles = Roles.Administrator)]
+        [Route("{userId}/Roles/Update")]
+        public async Task<IActionResult> UpdateRoles(UpdateRolesModel model)
+        {
+            await _userService.UpdateRoles(model);
+
+            return RedirectToAction("Index", "User");
+        }
+
+        [HttpGet]
+        [Route("TwoFactorAuth/{token}/{userId}")]
+        public async Task<IActionResult> TwoFactorAuth(string token, string userId)
+        {
+            if (!await _twoFactorAuthService.Validate(token, userId))
+                throw new NotFoundException("Invalid token");
+
+            return View(new TwoFactorAuthModel
+            {
+                UserId = userId,
+                Token = token
+            });
+        }
+
+        [HttpPost]
+        [Route("TwoFactorAuth/{token}/{userId}")]
+        public async Task<IActionResult> TwoFactorAuth(TwoFactorAuthModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View();
+            }
+
+            try
+            {
+                var principal = await _twoFactorAuthService.Login(model);
+
+                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme
+                        , principal);
+            }
+            catch (UnauthorizeException)
+            {
+                ViewData["Error"] = "Mã xác thực không chính xác.";
+                return View();
+            }
+            catch (ForbiddenException)
+            {
+                return RedirectToAction("Login", "User");
+            }
+
+            return Redirect("/");
         }
     }
 }

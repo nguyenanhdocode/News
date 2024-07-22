@@ -1,0 +1,26 @@
+﻿@model Application.Models.TwoFactorAuth.TwoFactorAuthModel;
+
+
+<div class="mt-2" style="max-width: 400px; margin: 10px auto">
+    <h3 class="text-center">Xác thực 2 bước</h3>
+    @if (@ViewData["Error"] != null)
+    {
+        <div class="alert alert-danger">
+            @ViewData["Error"]
+        </div>
+    }
+    <p>Chúng tôi vừa gửi mã xác thực đến email của bạn, vui lòng kiểm tra email.</p>
+    <form method="post">
+        @Html.TextBoxFor(p => p.Code, htmlAttributes: new
+            {
+                @class = "form-control form-control-lg text-center fw-bold",
+                placeholder = "Mã xác thực"
+            })
+        <small class="text-danger">@Html.ValidationMessageFor(model => model.Code)</small>
+        <div class="d-grid gap-2 col-12 mx-auto mt-2">
+            <button class="btn btn-primary" type="submit">Xác thực</button>
+        </div>
+        @Html.HiddenFor(p => p.Token)
+        @Html.HiddenFor(p => p.UserId)
+    </form>
+</div>

@@ -58,5 +58,48 @@ namespace Application.Services
         /// <param name="model"></param>
         /// <returns></returns>
         Task ConfirmEmail(ConfirmEmailModel model);
+
+        /// <summary>
+        /// Get all user
+        /// </summary>
+        /// <param name="param"></param>
+        /// <returns></returns>
+        Task<List<ProfileModel>> GetAll(Dictionary<string, string> param);
+
+        /// <summary>
+        /// Get profile id
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        Task<ProfileModel> GetProfile(string id);
+
+        /// <summary>
+        /// Delete user
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        Task Delete(string userId);
+
+        /// <summary>
+        /// Lock user
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        Task LockUser(string userId);
+
+        /// <summary>
+        /// Update roles
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="roles"></param>
+        /// <returns></returns>
+        Task UpdateRoles(UpdateRolesModel model);
+
+        /// <summary>
+        /// Check if user is in role
+        /// </summary>
+        /// <param name="role"></param>
+        /// <returns></returns>
+        Task<bool> IsInRole(string userId, string role);
     }
 }

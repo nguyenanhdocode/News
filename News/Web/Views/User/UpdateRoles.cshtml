@@ -1,0 +1,35 @@
+﻿@model Application.Models.User.UpdateRolesModel;
+
+@using Microsoft.AspNetCore.Identity
+@{
+    var roles = ViewData["Roles"] as List<IdentityRole> ?? new List<IdentityRole>();
+    var userRoles = ViewData["UserRoles"] as List<string> ?? new List<string>();
+}
+
+<h3>Cập nhật vai trò người dùng</h3>
+
+<form method="post">
+    <div class="d-flex">
+        <select id="roles" class="form-select" aria-label="Default select example" multiple>
+            @foreach (var role in roles)
+            {
+                <option value="@role.Name">@role.Name</option>
+            }
+        </select>
+        <div style="text-align: center">
+            <button id="btnAddAll" style="width: 80px" class="btn btn-light btn-sm border">>></button>
+            <button id="btnAdd" style="width: 80px" class="btn btn-light btn-sm border mt-1">></button>
+            <button id="btnRemoveAll" style="width: 80px" class="btn btn-light btn-sm border mt-1">&lt;&lt;</button>
+            <button id="btnRemove" style="width: 80px" class="btn btn-light btn-sm border mt-1">&lt;</button>
+        </div>
+        <select asp-for="Roles" id="userRoles" class="form-select" aria-label="Default select example" multiple>
+            @foreach (var role in userRoles)
+            {
+                <option value="@role">@role</option>
+            }
+        </select>
+    </div>
+    @Html.HiddenFor(p => p.UserId)
+    <button id="btnSubmit" type="submit" class="btn btn-primary mt-2">Lưu</button>
+</form>
+<script src="~/js/user/update_role.js"></script>

@@ -1,5 +1,9 @@
 ﻿using Core.Entities;
 using DataAccess.Persistence;
+using DataAccess.Repositories;
+using DataAccess.Repositories.Impl;
+using DataAccess.UnifOfWork;
+using DataAccess.UnifOfWork.Impl;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -22,7 +26,14 @@ namespace DataAccess
             services.AddDbContext<AppDbContext>(options => options.UseSqlServer(connectionString));
 
             services.AddDefaultIdentity<AppUser>(options => options.SignIn.RequireConfirmedAccount = true)
+                .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<AppDbContext>();
+
+            services.AddScoped<ICategoryRepository, CategoryRepository>();
+            services.AddScoped<IPostRepository, PostRepository>();
+            services.AddScoped<IBaseRepository<Asset>, BaseRepository<Asset>>();
+            services.AddScoped<ITwoFactorAuthRepository, TwoFactorAuthRepository>();
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             services.Configure<IdentityOptions>(options =>
             {

@@ -1,0 +1,102 @@
+﻿@model Application.Models.Post.CreatePostModel;
+
+@using Microsoft.Extensions.Options;
+@using Application.Models.Common;
+@using Application.Services;
+
+@inject ICategoryService categoryService;
+
+@{
+    var alert = ViewData["Alert"] as Alert;
+}
+
+<div class="mt-2">
+    <h4>Tạo mới bài đăng</h4>
+
+    @if (alert != null)
+    {
+        string className = string.Format("alert alert-{0}", alert.Type);
+        <div class="@className">
+            @alert.Message
+        </div>
+    }
+
+    <form method="post" enctype="multipart/form-data">
+        <div class="row">
+            <div class="col-sm-12 col-md-6">
+                <div class="mb-3">
+                    <label for="categoryId" class="form-label">Thể loại <sup>*</sup></label>
+                    <select class="form-select" name="CategoryId">
+                        @foreach (var item in await categoryService.GetAll())
+                        {
+                            <option value="@item.Id">@item.Name</option>
+                        }
+                    </select>
+                    <small class="text-danger">@Html.ValidationMessageFor(model => model.Slug)</small>
+                </div>
+            </div>
+            <div class="col-sm-12 col-md-6">
+                <label for="title" class="form-label">Ảnh bìa <sup>*</sup></label>
+                <input class="form-control" type="file" name="CoverPhoto"
+                       accept=".png,.jpg,.jpeg" />
+                <small class="text-danger">@Html.ValidationMessageFor(model => model.CoverPhoto)</small>
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="title" class="form-label">Tiêu đề <sup>*</sup></label>
+            @Html.TextBoxFor(p => p.Title, htmlAttributes: new
+                {
+                    @class = "form-control",
+                    id = "title"
+                })
+            <small class="text-danger">@Html.ValidationMessageFor(model => model.Title)</small>
+        </div>
+        <div class="mb-3">
+            <label for="slug" class="form-label">Slug <sup>*</sup></label>
+            @Html.TextBoxFor(p => p.Slug, htmlAttributes: new
+                {
+                    @class = "form-control",
+                    id = "slug"
+                })
+            <small class="text-danger">@Html.ValidationMessageFor(model => model.Slug)</small>
+        </div>
+        <div class="mb-3">
+            <label for="slug" class="form-label">Mô tả <sup>*</sup></label>
+            @Html.TextAreaFor(p => p.Description, htmlAttributes: new
+                {
+                    @class = "form-control",
+                })
+            <small class="text-danger">@Html.ValidationMessageFor(model => model.Description)</small>
+        </div>
+
+        <div id="editor">
+        </div>
+        <small class="text-danger">@Html.ValidationMessageFor(model => model.Content)</small>
+
+        <div class="d-flex mt-3">
+            <div class="mb-3 form-check">
+                @Html.CheckBoxFor(p => p.IsPinned, htmlAttributes: new
+                    {
+                        @class = "form-check-input"
+                    })
+                <label class="form-check-label" for="exampleCheck1">Ghim đầu trang</label>
+            </div>
+            <div class="mb-3 form-check ms-3">
+                @Html.CheckBoxFor(p => p.IsDraft, htmlAttributes: new
+                    {
+                        @class = "form-check-input"
+                    })
+                <label class="form-check-label" for="exampleCheck1">Lưu tạm (không đăng)</label>
+            </div>
+        </div>
+
+        @Html.HiddenFor(p => p.Content, htmlAttributes: new
+            {
+                id = "content"
+            })
+
+        <button id="btnSave" type="submit" class="btn btn-primary">Lưu</button>
+    </form>
+</div>
+
+<script type="module" src="~/js/post/create.js"></script>

@@ -1,0 +1,50 @@
+﻿@model List<Application.Models.PostCategory.CategoryModel>;
+
+<div class="d-flex justify-content-between align-items-center">
+    <h3>Quản lý danh mục</h3>
+    <a href="/Categories/Create" class="btn btn-sm border btn-light">+ Tạo mới</a>
+</div>
+
+<table class="table">
+    <thead>
+        <tr>
+            <td class="fw-bold">STT</td>
+            <td class="fw-bold">Tên</td>
+            <td class="fw-bold">Slug</td>
+            <td class="fw-bold">Thứ tự hiển thị</td>
+            <td class="fw-bold">Người tạo</td>
+            <td class="fw-bold">Ngày tạo</td>
+            <td></td>
+        </tr>
+    </thead>
+    <tbody>
+        @{
+            int index = 1;
+            foreach (var cate in Model)
+            {
+                <tr>
+                    <td class="align-middle">@(index++)</td>
+                    <td class="align-middle">@cate.Name</td>
+                    <td class="align-middle">@cate.Slug</td>
+                    <td class="align-middle">@cate.OrderIndex</td>
+                    <td class="align-middle">
+                        <a href="#" class="text-black">
+                            @cate.CreatedUser.FirstName @cate.CreatedUser.LastName
+                        </a>
+                    </td>
+                    <td class="align-middle">@cate.CreatedOn</td>
+                    <td class="align-middle">
+                        <div class="btn-group" role="group" aria-label="Basic example">
+                            <a href="/Categories/@cate.Id.ToString()/Delete" class="btn btn-light border btn-sm">
+                                Xoá
+                            </a>
+                            <a href="/Categories/@cate.Id.ToString()/Update" class="btn btn-light border btn-sm" style="width: 100px">
+                                Chỉnh sửa
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>

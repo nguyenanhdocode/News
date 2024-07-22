@@ -1,0 +1,29 @@
+﻿@using System.Security.Claims
+@model Application.Models.User.ProfileModel
+
+@{
+    var avatarUrl = Model.AvatarUrl != null ? Model.AvatarUrl : "/images/profile-user-large.png";
+    var roles = ViewData["Roles"] as List<string> ?? new List<string>();
+}
+
+<div class="d-flex">
+    <img class="border p-1" src=@avatarUrl />
+    <div class="ps-2">
+        @if (Model.IsDisabled)
+        {
+            <span class="badge bg-secondary">Tài khoản bị khoá</span>
+        }
+        <h4 class="mb-0">@Model.FirstName @Model.LastName</h4>
+        @if (!string.IsNullOrEmpty(Model.Email))
+        {
+            <p class="mb-0">@Model.Email</p>
+        }
+        <p class="mt-1 mb-1">@Model.CreatedOn</p>
+        @{
+            foreach (var role in roles)
+            {
+                <span class="badge bg-primary">@role</span>
+            }
+        }
+    </div>
+</div>

@@ -2,8 +2,10 @@
 @using Core.Entities;
 @using System.Security.Claims
 @using Application.Services;
+@using Core.Common;
 
 @inject IUserService userService;
+@inject ICategoryService categoryService;
 
 @{
     var profile = await userService.GetProfile();
@@ -23,13 +25,18 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                <form class="d-flex flex-grow-1 px-2">
-                    <input name="kw" class="form-control me-2" type="search" 
-                        placeholder="Nhập nội dung tìm kiếm..."
-                        value=@param["kw"]>
-                    <button class="btn btn-primary" style="width: 120px" type="submit">Tìm kiếm</button>
+                <form class="d-flex flex-grow-1 px-2" action="/Search">
+                    @Html.TextBox("SearchKw", value: "", htmlAttributes: new
+                        {
+                            @class = "form-control me-2",
+                            placeholder = "Nhập nội dung tìm kiếm..."
+                        })
+                    <button class="btn btn-primary" style="width: 130px" type="submit">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        Tìm kiếm
+                    </button>
                 </form>
-                    
+
                 @if (User.Identity.IsAuthenticated)
                 {
                     var avatarUrl = profile.AvatarUrl != null ? profile.AvatarUrl : "/images/profile-user.png";
@@ -39,9 +46,57 @@
                             <img style="width: 40px; height: 40px;" class="rounded-circle" src=@avatarUrl />
                         </button>
                         <ul id="user-menu" class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                            <li><a class="dropdown-item" href="#">@profile.FirstName @profile.LastName</a></li>
+                            <li>
+                                <a class="dropdown-item" href="/Users/@profile.Id">
+                                    @profile.FirstName @profile.LastName
+                                    <small class="text-muted d-block">@profile.Email</small>
+                                </a>
+                            </li>
+
+                            @if (User.IsInRole(Roles.Administrator) || User.IsInRole(Roles.Creator) || User.IsInRole(Roles.Moderator))
+                            {
+                                <li>
+                                    <hr class="dropdown-divider">
+                                    <small class="ps-3 text-muted">Quản lý</small>
+                                </li>
+                                @if (User.IsInRole(Roles.Administrator))
+                                {
+                                    <li>
+                                        <a class="dropdown-item" asp-area="" asp-action="Index" asp-controller="Category">
+                                            <i class="fa-solid fa-list"></i>
+                                            <span class="ms-1">Danh mục</span>
+                                        </a>
+                                    </li>
+                                }
+
+                                @if (User.IsInRole(Roles.Creator) || User.IsInRole(Roles.Moderator) || User.IsInRole(Roles.Administrator))
+                                {
+                                    <li>
+                                        <a class="dropdown-item" asp-area="" asp-action="Index" asp-controller="Post">
+                                            <i class="fa-regular fa-newspaper"></i>
+                                            <span class="ms-1">Bài đăng</span>
+                                        </a>
+                                    </li>
+                                }
+
+                                @if (User.IsInRole(Roles.Administrator) || User.IsInRole(Roles.Moderator))
+                                {
+                                    <li>
+                                        <a class="dropdown-item" asp-area="" asp-action="Index" asp-controller="User">
+                                            <i class="fa-solid fa-users-line"></i>
+                                            <span class="ms-1">Người dùng</span>
+                                        </a>
+                                    </li>
+                                }
+                            }
+
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" asp-area="" asp-action="Logout" asp-controller="User">Đăng xuất</a></li>
+                            <li>
+                                <a class="dropdown-item" asp-area="" asp-action="Logout" asp-controller="User">
+                                    <i class="fa-solid fa-right-from-bracket"></i>
+                                    <span class="ms-1">Đăng xuất</span>
+                                </a>
+                            </li>
                         </ul>
                     </div>
                 }
@@ -65,28 +120,28 @@
         </div>
     </nav>
 
-    <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-        <div class="container">
-            <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link text-dark ps-0" asp-area="" asp-controller="Home" asp-action="Index">
-                            Trang chủ
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">
-                            Thế giới
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">
-                            Thể thao
-                        </a>
-                    </li>
-                </ul>
-
+    @if (ViewData["ShowCategoryBar"] != null)
+    {
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            <div class="container">
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a class="nav-link text-dark ps-0" asp-area="" asp-controller="Home" asp-action="Index">
+                                Trang chủ
+                            </a>
+                        </li>
+                        @foreach (var cate in await categoryService.GetActiveCategories())
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" href="/Home?category=@cate.Slug">
+                                    @cate.Name
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </div>
             </div>
-        </div>
-    </nav>
+        </nav>
+    }
 </header>

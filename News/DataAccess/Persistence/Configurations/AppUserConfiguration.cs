@@ -27,6 +27,10 @@ namespace DataAccess.Persistence.Configurations
 
             builder.Property(p => p.CreatedDate).HasDefaultValue(DateTime.UtcNow);
 
+            builder.Property(p => p.IsDisabled)
+                .IsRequired()
+                .HasDefaultValue(false);
+
             builder.HasOne(p => p.Avatar).WithOne(p => p.Avatar);
 
             builder.Navigation(p => p.Avatar).AutoInclude();

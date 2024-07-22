@@ -1,0 +1,63 @@
+﻿@using Core.Common
+@using System.Security.Claims
+@using Application.Services;
+
+@model List<Application.Models.User.ProfileModel>;
+
+@inject IUserService userService;
+
+<h3>Quản lý người dùng</h3>
+
+<table class="table">
+    <thead>
+        <tr>
+            <td class="fw-bold">STT</td>
+            <td class="fw-bold">Họ</td>
+            <td class="fw-bold">Tên</td>
+            <td class="fw-bold">Email</td>
+            <td class="fw-bold">Ngày đăng ký</td>
+            <td class="fw-bold"></td>
+        </tr>
+    </thead>
+    <tbody>
+        @{
+            int index = 1;
+            foreach (var user in Model)
+            {
+                <tr>
+                    <td class="align-middle">@(index++)</td>
+                    <td class="align-middle">@user.LastName</td>
+                    <td class="align-middle">@user.FirstName</td>
+                    <td class="align-middle">
+                        <a class="text-black" href="/Users/@user.Id">@user.Email</a>
+                    </td>
+                    <td class="align-middle">@user.CreatedOn</td>
+                    <td class="align-middle">
+                        <div class="btn-group" role="group" aria-label="Basic example">
+                            @if ((User.IsInRole(Roles.Moderator) || User.IsInRole(Roles.Administrator))
+                    && !(await userService.IsInRole(user.Id, Roles.Administrator)))
+                            {
+                                <a href="/Users/@user.Id.ToString()/Lock"
+                                   class="btn border btn-sm @(user.IsDisabled ? "btn-warning" : "btn-light")">
+                                    @(user.IsDisabled ? "Mở khoá" : "Khoá")
+                                </a>
+                            }
+
+                            @if (User.IsInRole(Roles.Administrator))
+                            {
+                                <a href="/Users/@user.Id.ToString()/Delete" class="btn btn-light border btn-sm">
+                                    Xoá
+                                </a>
+
+                                <a href="/Users/@user.Id.ToString()/Roles/Update" class="btn btn-light border btn-sm" style="width: 120px">
+                                    Cập nhật vai trò
+                                </a>
+                            }
+
+                        </div>
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>

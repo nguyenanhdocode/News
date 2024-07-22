@@ -7,15 +7,25 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <None Include="wwwroot\ckeditor\.circleci\config.yml" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="MarkdownSharp" Version="2.0.5" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.0">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
+		<PackageReference Include="System.Linq.Dynamic.Core" Version="1.4.3" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\Application\Application.csproj" />
 		<ProjectReference Include="..\DataAccess\DataAccess.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="wwwroot\uploads\" />
 	</ItemGroup>
 
 </Project>

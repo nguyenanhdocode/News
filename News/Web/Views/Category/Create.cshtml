@@ -1,0 +1,38 @@
+﻿@model Application.Models.PostCategory.CreateCategoryModel;
+
+<h3>Tạo mới danh mục</h3>
+
+<form method="post">
+    <div class="row">
+        <div class="col-sm-12 col-md-12 col-lg-4">
+            <label class="mt-2">Tên:</label>
+            @Html.TextBoxFor(p => p.Name, htmlAttributes: new
+                {
+                    @class = "form-control",
+                    id="name"
+                })
+            <small class="text-danger">@Html.ValidationMessageFor(model => model.Name)</small>
+        </div>
+        <div class="col-sm-12 col-md-12 col-lg-4">
+            <label class="mt-2">Slug:</label>
+            @Html.TextBoxFor(p => p.Slug, htmlAttributes: new
+                {
+                    @class = "form-control",
+                    id="slug"
+                })
+            <small class="text-danger">@Html.ValidationMessageFor(model => model.Slug)</small>
+        </div>
+        <div class="col-sm-12 col-md-12 col-lg-4">
+            <label class="mt-2">Thứ tự hiển thị:</label>
+            @Html.TextBoxFor(p => p.OrderIndex, htmlAttributes: new
+                {
+                    @class = "form-control",
+                    type = "number",
+                    min = 1,
+                })
+            <small class="text-danger">@Html.ValidationMessageFor(model => model.OrderIndex)</small>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary mt-2">Lưu</button>
+</form>
+<script src="~/js/category/create.js"></script>
