@@ -107,9 +107,9 @@ namespace Application.Services.Impl
             string template = await _templateService.GetTemplateAsync("two_factor_auth.html");
             string body = _templateService.ReplaceInTemplate(template, new Dictionary<string, string>
             {
-                {"firstName", model.FirstName },
-                {"lastName", model.LastName },
-                {"code", model.Code}
+                {"{firstName}", model.FirstName },
+                {"{lastName}", model.LastName },
+                {"{code}", model.Code}
             });
 
             string subject = "N4News - Xác thực 2 bước";

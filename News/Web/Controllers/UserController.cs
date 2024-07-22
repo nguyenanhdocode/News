@@ -426,5 +426,22 @@ namespace Web.Controllers
 
             return Redirect("/");
         }
+
+        [HttpGet]
+        [Route("ChangePassword")]
+        [Authorize]
+        public IActionResult ChangePassword()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [Route("ChangePassword")]
+        [Authorize]
+        public IActionResult ChangePassword(ChangePasswordModel model)
+        {
+            
+            return View();
+        }
     }
 }

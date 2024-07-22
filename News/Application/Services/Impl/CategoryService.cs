@@ -1,6 +1,7 @@
 ﻿using Application.Exceptions;
 using Application.Models.PostCategory;
 using AutoMapper;
+using Core.Common;
 using Core.Entities;
 using DataAccess.UnifOfWork;
 using LinqKit;
@@ -20,14 +21,17 @@ namespace Application.Services.Impl
         private IUnitOfWork _uow;
         private IMapper _mapper;
         private IClaimService _claimService;
+        private IUserService _userService;
 
         public CategoryService(IUnitOfWork uow
             , IMapper mapper
-            , IClaimService claimService)
+            , IClaimService claimService
+            , IUserService userService)
         {
             _uow = uow;
             _mapper = mapper;
             _claimService = claimService;
+            _userService = userService;
         }
 
         public async Task Create(CreateCategoryModel model)
@@ -103,7 +107,8 @@ namespace Application.Services.Impl
             if (cate == null)
                 throw new NotFoundException("Category not found");
 
-            if (!cate.CreatedUserId.Equals(_claimService.GetUserId()))
+            if (!cate.CreatedUserId.Equals(_claimService.GetUserId())
+                && !await _userService.IsInRole(_claimService.GetUserId(), Roles.Administrator))
                 throw new ForbiddenException();
 
             cate.Name = model.Name;

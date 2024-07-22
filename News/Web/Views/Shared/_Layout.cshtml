@@ -20,15 +20,15 @@
 
     @await Html.PartialAsync("Header")
 
-    <div class="container">
+    <div class="container" id="main">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
+    <footer class="border-top footer text-muted" id="footer">
         <div class="container">
-            &copy; 2024 - News - <a class="text-decoration-none text-black" asp-area="" asp-controller="Home" asp-action="Privacy">Chính sách</a>
+            &copy; 2024 - N4News - <a class="text-decoration-none text-black" asp-area="" asp-controller="Home" asp-action="Privacy">Chính sách</a>
         </div>
     </footer>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>

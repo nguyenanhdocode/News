@@ -19,14 +19,17 @@ namespace Web.Controllers
         private ICategoryService _categoryService;
         private IMapper _mapper;
         private IClaimService _claimService;
+        private IUserService _userService;
 
         public CategoryController(ICategoryService categoryService
             , IMapper mapper
-            , IClaimService claimService)
+            , IClaimService claimService
+            , IUserService userService)
         {
             _categoryService = categoryService;
             _mapper = mapper;
             _claimService = claimService;
+            _userService = userService;
         }
 
         [HttpGet]
@@ -76,9 +79,10 @@ namespace Web.Controllers
             var cate = await _categoryService.GetCategoryById(id);
 
             if (cate == null)
-                throw new NotFoundException("Post not found");
+                throw new NotFoundException("Category not found");
 
-            if (!cate.CreatedUserId.Equals(_claimService.GetUserId()))
+            if (!cate.CreatedUserId.Equals(_claimService.GetUserId())
+                && !await _userService.IsInRole(_claimService.GetUserId(), Roles.Administrator))
                 throw new ForbiddenException();
 
             return View(_mapper.Map<Category, UpdateCategoryModel>(cate));
@@ -120,7 +124,8 @@ namespace Web.Controllers
             if (cate == null)
                 throw new NotFoundException("Category not found");
 
-            if (!cate.CreatedUserId.Equals(_claimService.GetUserId()))
+            if (!cate.CreatedUserId.Equals(_claimService.GetUserId())
+                    && !await _userService.IsInRole(_claimService.GetUserId(), Roles.Administrator))
                 throw new ForbiddenException();
 
             return View(_mapper.Map<Category, DeleteCategoryModel>(cate));
